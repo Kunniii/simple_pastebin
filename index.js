@@ -23,6 +23,10 @@ function generateId(content) {
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
+function generateShortId(content) {
+  return generateId(content).substring(0, 8);
+}
+
 app.get('/', (req, res) => {
   res.send(`
 <!DOCTYPE html>
@@ -52,6 +56,7 @@ app.post('/paste', async (req, res) => {
   try {
     const { content } = req.body;
     const id = generateId(content);
+    const shortId = generateShortId(content);
     const filename = `${id}.txt`;
     
     try {
@@ -69,10 +74,12 @@ app.post('/paste', async (req, res) => {
         body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
         a { color: #007bff; text-decoration: none; }
         a:hover { text-decoration: underline; }
+        .url-info { margin: 10px 0; }
     </style>
 </head>
 <body>
-    <p>Your pastebin id is: <a href="/paste/${id}">${id}</a></p>
+    <div class="url-info">Full URL: <a href="/paste/${id}">${id}</a></div>
+    <div class="url-info">Short URL: <a href="/s/${shortId}">${shortId}</a></div>
 </body>
 </html>
     `);
@@ -130,6 +137,39 @@ app.get('/paste/:id', async (req, res) => {
 </body>
 </html>
     `);
+  }
+});
+
+app.get('/s/:shortId', async (req, res) => {
+  try {
+    const { shortId } = req.params;
+    
+    const files = await fs.readdir(PASTES_DIR);
+    const matchingFile = files.find(file => file.startsWith(shortId) && file.endsWith('.txt'));
+    
+    if (!matchingFile) {
+      return res.status(404).send(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Paste Not Found</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+    </style>
+</head>
+<body>
+    <h1>Paste Not Found</h1>
+    <p>The paste you're looking for doesn't exist.</p>
+    <p><a href="/">← Go back home</a></p>
+</body>
+</html>
+      `);
+    }
+    
+    const fullId = matchingFile.replace('.txt', '');
+    res.redirect(`/paste/${fullId}`);
+  } catch (error) {
+    res.status(500).send('Error processing short URL');
   }
 });
 

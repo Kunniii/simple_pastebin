@@ -2,9 +2,12 @@
 
 A minimalist pastebin service built with Node.js and Express that uses content hashing for unique paste identification.
 
+**Topics:** nodejs express pastebin file-storage content-hashing sha256 deduplication web-app minimal javascript backend url-shortener
+
 ## Features
 
 - **Content-based hashing** - SHA-256 hash of content as paste ID
+- **Short URLs** - 8-character shortened URLs for easy sharing
 - **Automatic deduplication** - Identical content shares same URL
 - **Raw text view** - Access raw content at `/raw/:id`
 - **File-based storage** - Stores pastes as text files locally
@@ -33,16 +36,18 @@ node index.js
 - Visit `http://localhost:3000`
 - Enter your content in the textarea
 - Click "Create Paste"
-- Get a clickable hash ID that links to your paste
+- Get both full and short URLs for your paste
 
 ### Viewing Pastes
 - **HTML view**: `/paste/:id` - Formatted display
+- **Short URL**: `/s/:shortId` - Redirects to full paste (8 chars)
 - **Raw view**: `/raw/:id` - Plain text content
 
 ### API Endpoints
 - `GET /` - Home page with paste form
 - `POST /paste` - Create new paste
 - `GET /paste/:id` - View paste in HTML format
+- `GET /s/:shortId` - Short URL redirect to full paste
 - `GET /raw/:id` - View raw paste content
 
 ## How It Works
